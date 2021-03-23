@@ -16,10 +16,16 @@ import android.bluetooth.le.ScanResult;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
+
+import com.welie.blessed.BluetoothCentralManager;
+import com.welie.blessed.BluetoothCentralManagerCallback;
+import com.welie.blessed.BluetoothPeripheral;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,13 +34,19 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
 
     private static final int ACCESS_LOCATION_REQUEST = 1;
-    private ArrayList<BLEDevice> BLEDeviceList = new ArrayList<BLEDevice>();
+    public static ArrayList<BLEDevice> BLEDeviceList = new ArrayList<BLEDevice>();
     private String deviceName;
     private RecyclerView mRecylerView;
-    private BLEAdapter mAdapter;
+    public static BLEAdapter mAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
     public static BLEDevice connectedDevice;
     public static BluetoothAdapter bluetoothAdapter;
+    public static BluetoothCentralManager central;
+    public static String connectedDeviceName;
+    public static String connectedDeviceMac;
+
+
+
 
 
     @Override
@@ -52,6 +64,8 @@ public class MainActivity extends AppCompatActivity {
 
         //start scan button
         Button startScanButton = findViewById(R.id.startScan);
+        Button stopScanButton = findViewById(R.id.stopScan);
+        central = new BluetoothCentralManager(getApplicationContext(), bluetoothCentralManagerCallback, new Handler());
         startScanButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view)
@@ -60,16 +74,17 @@ public class MainActivity extends AppCompatActivity {
                 Log.d("myTag", "scanning");
 
                 //scanning
-                bluetoothAdapter  = BluetoothAdapter.getDefaultAdapter();
-                BluetoothLeScanner scanner = bluetoothAdapter.getBluetoothLeScanner();
+                central.scanForPeripherals();
+            }
+        });
 
-                if (scanner != null) {
-                    scanner.startScan(scanCallback);
-                    Log.d("process", "scan started");
-                }  else {
-                    Log.e("process", "could not get scanner object");
-                }
-
+        stopScanButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view)
+            {//to do after clicking start scan button
+                Toast.makeText(getApplicationContext(), "stop scanning", Toast.LENGTH_LONG).show();
+                //stop scanning
+                central.stopScan();
             }
         });
 
@@ -78,14 +93,15 @@ public class MainActivity extends AppCompatActivity {
         mRecylerView.setHasFixedSize(true);
         mLayoutManager = new LinearLayoutManager(this);
         mAdapter = new BLEAdapter(BLEDeviceList);
-
         mRecylerView.setLayoutManager(mLayoutManager);
         mRecylerView.setAdapter(mAdapter);
-
         mAdapter.setOnItemClickListener(new BLEAdapter.BLEViewHolder.OnItemClickListener() {
             @Override
             public void onItemClick(int position) {
                 connectedDevice = BLEDeviceList.get(position);
+                connectedDeviceName = connectedDevice.getDeviceName();
+                connectedDeviceMac = connectedDevice.getMacAddress();
+                central.stopScan();
                 openDeviceActivity();
             }
         });
@@ -93,41 +109,29 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-
-    //scan callback
-    private final ScanCallback scanCallback = new ScanCallback() {
+    private final BluetoothCentralManagerCallback bluetoothCentralManagerCallback = new BluetoothCentralManagerCallback() {
         @Override
-        public void onScanResult(int callbackType, ScanResult result) {
-            BluetoothDevice device = result.getDevice();
-            if(device.getName() == null){
+        public void onDiscoveredPeripheral(BluetoothPeripheral peripheral, ScanResult scanResult) {
+
+            //processing found devices
+            Log.d("device", peripheral.getAddress());
+            if(peripheral.getName() == null){
                 deviceName = "Unnamed";
             } else {
-                deviceName = device.getName();
+                deviceName = peripheral.getName();
             }
 
             int found = 0;
             for(BLEDevice foundDevice : BLEDeviceList){
-                if(foundDevice.getMacAddress().equals(device.getAddress())){
+                if(foundDevice.getMacAddress().equals(peripheral.getAddress())){
                     found =  1;
                 }
             }
 
             if(found == 0){
-                BLEDeviceList.add(new BLEDevice(deviceName, device.getAddress()));
+                BLEDeviceList.add(new BLEDevice(deviceName, peripheral.getAddress()));
                 mAdapter.notifyDataSetChanged();
             }
-
-        }
-
-        @Override
-        public void onBatchScanResults(List<ScanResult> results) {
-            // Ignore for now
-        }
-
-        @Override
-        public void onScanFailed(int errorCode) {
-            Toast.makeText(getApplicationContext(), "scan failed", Toast.LENGTH_SHORT).show();
-            Log.d("device found", "nothing");
         }
     };
 
@@ -145,6 +149,14 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(this, DeviceActivity.class);
         startActivity(intent);
     }
+
+
+
+
+
+
+
+
 
 
 

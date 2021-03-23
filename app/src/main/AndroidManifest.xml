@@ -14,7 +14,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar">
-        <activity android:name=".HeartbeatActivity"></activity>
+        <activity android:name=".LedActivity"></activity>
+        <activity android:name=".HeartbeatActivity" />
         <activity android:name=".DeviceActivity" />
         <activity
             android:name=".GraphActivity"

@@ -8,7 +8,6 @@ import android.os.Bundle;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
-import com.welie.blessed.BluetoothCentral;
 import com.welie.blessed.BluetoothPeripheral;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -31,7 +30,7 @@ public class GraphActivity extends AppCompatActivity {
         setContentView(R.layout.activity_graph);
 
         BluetoothDevice device = bluetoothAdapter.getRemoteDevice(connectedDevice.getMacAddress());
-        
+
 
 
     }
