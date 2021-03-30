@@ -18,12 +18,15 @@ import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.welie.blessed.BluetoothBytesParser;
 import com.welie.blessed.BluetoothPeripheral;
 import com.welie.blessed.BluetoothPeripheralCallback;
 import com.welie.blessed.GattStatus;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.math.BigInteger;
+import java.nio.ByteBuffer;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.UUID;
@@ -94,8 +97,8 @@ public class HeartbeatActivity extends AppCompatActivity {
         YAxis leftAxis = mChart.getAxisLeft();
         leftAxis.setTextColor(Color.WHITE);
         leftAxis.setDrawGridLines(false);
-        leftAxis.setAxisMaximum(250f);
-        leftAxis.setAxisMinimum(0f);
+        leftAxis.setAxisMaximum(65000f);
+        leftAxis.setAxisMinimum(45000f);
         leftAxis.setDrawGridLines(true);
 
         YAxis rightAxis = mChart.getAxisRight();
@@ -160,10 +163,13 @@ public class HeartbeatActivity extends AppCompatActivity {
        }
 
         public void onCharacteristicUpdate(@NotNull BluetoothPeripheral peripheral, byte[] value, @NotNull BluetoothGattCharacteristic characteristic, @NotNull GattStatus status){
-            HeartRateMeasurement measurement = new HeartRateMeasurement(value);
-            Log.d("BPM", Integer.toString(measurement.pulse));
-            Log.d("got", "something");
-            HRpulse = measurement.pulse;
+            //HeartRateMeasurement measurement = new HeartRateMeasurement(value);
+            //Log.d("BPM", measurement.pulse.toString());
+            //Log.d("got", "something");
+            HRpulse = (ByteBuffer.wrap(value).getInt());
+            Log.d("soem value", Integer.toString(HRpulse));
+
+
 
         }
     };
