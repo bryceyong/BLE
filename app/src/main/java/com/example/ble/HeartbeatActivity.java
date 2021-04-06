@@ -6,6 +6,8 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.github.mikephil.charting.charts.LineChart;
@@ -22,6 +24,7 @@ import com.welie.blessed.BluetoothBytesParser;
 import com.welie.blessed.BluetoothPeripheral;
 import com.welie.blessed.BluetoothPeripheralCallback;
 import com.welie.blessed.GattStatus;
+import com.welie.blessed.WriteType;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -43,6 +46,9 @@ public class HeartbeatActivity extends AppCompatActivity {
 
     private static final UUID HRS_SERVICE_UUID = UUID.fromString("0000180D-0000-1000-8000-00805f9b34fb");
     private static final UUID HEARTRATE_MEASUREMENT_CHARACTERISTIC_UUID = UUID.fromString("00002A37-0000-1000-8000-00805f9b34fb");
+
+    public static final UUID HPS_SERVICE_UUID = UUID.fromString("00001823-0000-1000-8000-00805f9b34fb");
+    private static final UUID LED_MEASUREMENT_CHARACTERISTIC_UUID = UUID.fromString("00002A5E-0000-1000-8000-00805f9b34fb");
 
     private int HRpulse;
     private LineChart mChart;
@@ -108,14 +114,7 @@ public class HeartbeatActivity extends AppCompatActivity {
         mChart.getXAxis().setDrawGridLines(true);
         mChart.setDrawBorders(true);
 
-
-
-
-
-
-
-
-        Thread thread = new Thread() {
+        Thread graphThread = new Thread() {
 
             @Override
             public void run() {
@@ -134,7 +133,68 @@ public class HeartbeatActivity extends AppCompatActivity {
             }
         };
 
-        thread.start();
+        Thread yAxisThread = new Thread() {
+
+            @Override
+            public void run() {
+                try {
+                    while (!isInterrupted()) {
+                        Thread.sleep(100);
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                leftAxis.setAxisMaximum(HRpulse + 5000);
+                                leftAxis.setAxisMinimum(HRpulse - 5000);
+                            }
+                        });
+                    }
+                } catch (InterruptedException e) {
+                }
+            }
+        };
+
+        yAxisThread.start();
+        graphThread.start();
+
+        ImageButton green = findViewById(R.id.green);
+        green.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view)
+            {//to do after clicking heartbeat
+                Log.d("Hello", Integer.toString(HRpulse));
+
+
+                BluetoothGattCharacteristic characteristic = peripheral.getCharacteristic(HPS_SERVICE_UUID, LED_MEASUREMENT_CHARACTERISTIC_UUID);
+                if(characteristic == null){
+                    Log.d("NULL", Integer.toString(HRpulse));
+                } else {
+                    Log.d("NOT NULL", Integer.toString(HRpulse));
+                }
+                peripheral.writeCharacteristic(characteristic, new byte[] {0x03}, WriteType.WITH_RESPONSE);
+
+
+            }
+        });
+
+        ImageButton red = findViewById(R.id.red);
+        red.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view)
+            {//to do after clicking heartbeat
+                Log.d("Hello", Integer.toString(HRpulse));
+
+
+                BluetoothGattCharacteristic characteristic = peripheral.getCharacteristic(HPS_SERVICE_UUID, LED_MEASUREMENT_CHARACTERISTIC_UUID);
+                if(characteristic == null){
+                    Log.d("NULL", Integer.toString(HRpulse));
+                } else {
+                    Log.d("NOT NULL", Integer.toString(HRpulse));
+                }
+                peripheral.writeCharacteristic(characteristic, new byte[] {0x01}, WriteType.WITH_RESPONSE);
+
+
+            }
+        });
 
 
 
@@ -167,7 +227,7 @@ public class HeartbeatActivity extends AppCompatActivity {
             //Log.d("BPM", measurement.pulse.toString());
             //Log.d("got", "something");
             HRpulse = (ByteBuffer.wrap(value).getInt());
-            Log.d("soem value", Integer.toString(HRpulse));
+            //Log.d("soem value", Integer.toString(HRpulse));
 
 
 
