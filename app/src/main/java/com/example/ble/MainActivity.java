@@ -33,6 +33,7 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
+    private static final int REQUEST_ENABLE_BT = 1;
     private static final int ACCESS_LOCATION_REQUEST = 1;
     public static ArrayList<BLEDevice> BLEDeviceList = new ArrayList<BLEDevice>();
     private String deviceName;
@@ -46,17 +47,20 @@ public class MainActivity extends AppCompatActivity {
     public static String connectedDeviceMac;
 
 
-
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+        startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+
+        requestLocationPermission();
+
         //requesting permission
         if(ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION )== PackageManager.PERMISSION_GRANTED
-                && ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION )== PackageManager.PERMISSION_GRANTED){
+                && ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION )== PackageManager.PERMISSION_GRANTED
+                && ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_BACKGROUND_LOCATION )== PackageManager.PERMISSION_GRANTED){
             Toast.makeText(MainActivity.this, "location permission granted", Toast.LENGTH_SHORT).show();
         } else {
             requestLocationPermission();
@@ -128,7 +132,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
 
-            if(found == 0){
+            if(found == 0 && deviceName != "Unnamed"){
                 BLEDeviceList.add(new BLEDevice(deviceName, peripheral.getAddress()));
                 mAdapter.notifyDataSetChanged();
             }
@@ -137,16 +141,15 @@ public class MainActivity extends AppCompatActivity {
 
     //Request Permission
     private void requestLocationPermission(){
-        if(ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.BLUETOOTH)){
 
-        } else {
             ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.ACCESS_COARSE_LOCATION}, ACCESS_LOCATION_REQUEST);
             ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.ACCESS_FINE_LOCATION}, ACCESS_LOCATION_REQUEST);
-        }
+            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.ACCESS_BACKGROUND_LOCATION}, ACCESS_LOCATION_REQUEST);
+
     }
 
     public void openDeviceActivity(){
-        Intent intent = new Intent(this, DeviceActivity.class);
+        Intent intent = new Intent(this, HeartbeatActivity.class);
         startActivity(intent);
     }
 

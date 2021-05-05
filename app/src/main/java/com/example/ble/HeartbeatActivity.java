@@ -1,14 +1,23 @@
-package com.example.ble;
+ package com.example.ble;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.FileProvider;
+
 import android.bluetooth.BluetoothGattCharacteristic;
+import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
+import android.widget.Spinner;
 import android.widget.TextView;
+
 
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.Legend;
@@ -35,14 +44,20 @@ import java.util.TimerTask;
 import java.util.UUID;
 
 import timber.log.Timber;
+import java.io.File;
+import java.io.FileOutputStream;
 
 import static android.bluetooth.BluetoothGatt.CONNECTION_PRIORITY_HIGH;
 import static com.example.ble.DeviceActivity.user;
 import static com.example.ble.MainActivity.central;
 import static com.example.ble.MainActivity.connectedDevice;
+import java.util.*;
 
 
-public class HeartbeatActivity extends AppCompatActivity {
+public class HeartbeatActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
+
+    StringBuilder data = new StringBuilder();
+        //data.append("Time,Distance");
 
     private static final UUID HRS_SERVICE_UUID = UUID.fromString("0000180D-0000-1000-8000-00805f9b34fb");
     private static final UUID HEARTRATE_MEASUREMENT_CHARACTERISTIC_UUID = UUID.fromString("00002A37-0000-1000-8000-00805f9b34fb");
@@ -53,13 +68,21 @@ public class HeartbeatActivity extends AppCompatActivity {
     private int HRpulse;
     private LineChart mChart;
 
+    BluetoothPeripheral peripheral = central.getPeripheral(connectedDevice.getMacAddress());
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_heartbeat);
 
-        BluetoothPeripheral peripheral = central.getPeripheral(connectedDevice.getMacAddress());
+        /*
+        Spinner spinner = findViewById(R.id.lights);
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.lights, android.R.layout.simple_spinner_item);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner.setAdapter(adapter);
+        spinner.setOnItemSelectedListener(this);
+*/
+        //BluetoothPeripheral peripheral = central.getPeripheral(connectedDevice.getMacAddress());
         central.connectPeripheral(peripheral, peripheralCallback);
 
         mChart = (LineChart) findViewById(R.id.graph);
@@ -103,8 +126,8 @@ public class HeartbeatActivity extends AppCompatActivity {
         YAxis leftAxis = mChart.getAxisLeft();
         leftAxis.setTextColor(Color.WHITE);
         leftAxis.setDrawGridLines(false);
-        leftAxis.setAxisMaximum(65000f);
-        leftAxis.setAxisMinimum(45000f);
+        leftAxis.setAxisMaximum(100000);
+        leftAxis.setAxisMinimum(0);
         leftAxis.setDrawGridLines(true);
 
         YAxis rightAxis = mChart.getAxisRight();
@@ -133,6 +156,7 @@ public class HeartbeatActivity extends AppCompatActivity {
             }
         };
 
+
         Thread yAxisThread = new Thread() {
 
             @Override
@@ -143,8 +167,8 @@ public class HeartbeatActivity extends AppCompatActivity {
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                leftAxis.setAxisMaximum(HRpulse + 5000);
-                                leftAxis.setAxisMinimum(HRpulse - 5000);
+                                leftAxis.setAxisMaximum(HRpulse + 10000);
+                                leftAxis.setAxisMinimum(HRpulse - 10000);
                             }
                         });
                     }
@@ -154,8 +178,10 @@ public class HeartbeatActivity extends AppCompatActivity {
         };
 
         yAxisThread.start();
+
         graphThread.start();
 
+        /*
         ImageButton green = findViewById(R.id.green);
         green.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -198,7 +224,7 @@ public class HeartbeatActivity extends AppCompatActivity {
 
 
 
-
+*/
 
 
 
@@ -234,12 +260,35 @@ public class HeartbeatActivity extends AppCompatActivity {
         }
     };
 
+    public void export(View view){
+        try{
+            //saving the file into device
+            FileOutputStream out = openFileOutput("data.csv", Context.MODE_PRIVATE);
+            out.write((data.toString()).getBytes());
+            out.close();
+
+            //exporting
+            Context context = getApplicationContext();
+            File filelocation = new File(getFilesDir(), "data.csv");
+            Uri path = FileProvider.getUriForFile(context, "com.example.exportcsv.fileprovider", filelocation);
+            Intent fileIntent = new Intent(Intent.ACTION_SEND);
+            fileIntent.setType("text/csv");
+            fileIntent.putExtra(Intent.EXTRA_SUBJECT, "Data");
+            fileIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            Intent intent = fileIntent.putExtra(Intent.EXTRA_STREAM, path);
+            startActivity(Intent.createChooser(fileIntent, "Send mail"));
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
     public void updatePulse(){
 
 
 
-        TextView heartrate = findViewById(R.id.heartrate);
-        heartrate.setText(Integer.toString(HRpulse));
+        TextView rawReading = findViewById(R.id.rawReading);
+        rawReading.setText("Raw Reading: " + Integer.toString(HRpulse));
         LineData data = mChart.getData();
 
         if (data != null) {
@@ -252,6 +301,15 @@ public class HeartbeatActivity extends AppCompatActivity {
                 data.addDataSet(set);
             }
 
+/*
+            int adjHRpulse = HRpulse;
+            if(HRpulse > 4208000){
+                adjHRpulse = 4208000;
+            } else if(HRpulse < 4200000){
+                adjHRpulse = 4200000;
+            }
+
+*/
 
             data.addEntry(new Entry(set.getEntryCount(), HRpulse), 0);
             data.notifyDataChanged();
@@ -260,7 +318,7 @@ public class HeartbeatActivity extends AppCompatActivity {
             mChart.notifyDataSetChanged();
 
             // limit the number of visible entries
-            mChart.setVisibleXRangeMaximum(500);
+            mChart.setVisibleXRangeMaximum(1000);
             // mChart.setVisibleYRange(30, AxisDependency.LEFT);
 
             // move to the latest entry
@@ -285,8 +343,14 @@ public class HeartbeatActivity extends AppCompatActivity {
     }
 
 
+    @Override
+    public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
 
 
+    }
 
+    @Override
+    public void onNothingSelected(AdapterView<?> adapterView) {
 
+    }
 }

@@ -5,17 +5,18 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#000"
     tools:context=".MainActivity">
 
     <Button
         android:id="@+id/startScan"
-        android:layout_width="132dp"
+        android:layout_width="170dp"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_alignParentBottom="true"
-        android:layout_marginStart="55dp"
+        android:layout_marginStart="150dp"
         android:layout_marginBottom="45dp"
-        android:background="#DBF3FA"
+        android:background="#B2BCC0"
         android:text="Start Scan"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -25,15 +26,15 @@
 
     <Button
         android:id="@+id/stopScan"
-        android:layout_width="132dp"
+        android:layout_width="170dp"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
-        android:layout_marginStart="219dp"
-        android:layout_marginEnd="55dp"
-        android:layout_marginBottom="45dp"
-        android:background="#DBF3FA"
+        android:layout_marginStart="426dp"
+        android:layout_marginEnd="150dp"
+        android:layout_marginBottom="47dp"
+        android:background="#B2BCC0"
         android:text="Stop Scan"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -44,7 +45,7 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycerlView"
         android:layout_width="match_parent"
-        android:layout_height="618dp"
+        android:layout_height="wrap_content"
         android:layout_above="@+id/startScan"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
@@ -52,10 +53,10 @@
         android:layout_marginStart="0dp"
         android:layout_marginTop="0dp"
         android:layout_marginEnd="0dp"
-        android:layout_marginBottom="20dp"
+        android:layout_marginBottom="9dp"
+        android:background="#43464B"
         android:padding="4dp"
-        android:scrollbars="vertical"
-        android:background="#DBF3FA">
+        android:scrollbars="vertical">
 
     </androidx.recyclerview.widget.RecyclerView>
 

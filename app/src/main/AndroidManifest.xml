@@ -5,6 +5,7 @@
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
     <application
@@ -14,10 +15,14 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar">
-        <activity android:name=".LedActivity"></activity>
-        <activity android:name=".HeartbeatActivity" />
-        <activity android:name=".DeviceActivity" />
+        <activity android:name=".LedActivity"
+            android:screenOrientation="landscape"></activity>
+        <activity android:name=".HeartbeatActivity"
+            android:screenOrientation="landscape"/>
+        <activity android:name=".DeviceActivity"
+            android:screenOrientation="landscape"/>
         <activity
+            android:screenOrientation="landscape"
             android:name=".GraphActivity"
             android:label="@string/title_activity_graph"
             android:theme="@style/NoActionBar" />
@@ -28,6 +33,15 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="com.example.ble.fileprovider"
+            android:grantUriPermissions="true"
+            android:exported="false">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/provider_paths"/>
+        </provider>
     </application>
 
 </manifest>

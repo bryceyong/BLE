@@ -17,20 +17,21 @@
             android:id="@+id/deviceName"
             android:layout_width="350dp"
             android:layout_height="30dp"
+            android:layout_alignParentStart="true"
             android:layout_alignParentTop="true"
             android:layout_alignParentEnd="true"
+            android:layout_marginStart="20dp"
             android:layout_marginTop="10dp"
-            android:layout_marginEnd="36dp"
             android:text="deviceName" />
 
         <TextView
             android:id="@+id/macAddress"
             android:layout_width="350dp"
             android:layout_height="30dp"
+            android:layout_alignParentStart="true"
             android:layout_alignParentTop="true"
-            android:layout_alignParentEnd="true"
-            android:layout_marginTop="50dp"
-            android:layout_marginEnd="37dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="45dp"
             android:text="macAddress" />
 
 
